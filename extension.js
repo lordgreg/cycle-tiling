@@ -187,10 +187,11 @@ export default class CycleTilingExtension extends Extension {
       const monitor = win.get_monitor();
       const workspace = global.workspace_manager.get_active_workspace();
       const workArea = workspace.get_work_area_for_monitor(monitor);
-      const x = Math.floor(workArea.x + workArea.width * 0.15);
-      const y = Math.floor(workArea.y + workArea.height * 0.15);
       const width = Math.floor(workArea.width * 0.6);
       const height = Math.floor(workArea.height * 0.6);
+      const x = Math.floor(workArea.x + (workArea.width - width) / 2);
+      const y = Math.floor(workArea.y + (workArea.height - height) / 2);
+
       win.unmaximize();
       win.move_resize_frame(true, x, y, width, height);
     } else {
