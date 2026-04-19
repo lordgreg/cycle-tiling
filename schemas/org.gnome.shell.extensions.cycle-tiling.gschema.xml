@@ -7,25 +7,25 @@
 
     <!-- Actual keybindings (read by addKeybinding) -->
     <key name="cycle-tiling-left" type="as">
-      <default><![CDATA[['<Alt><Shift>h', '<Alt><Shift>q']]]></default>
+      <default><![CDATA[['<Super>Left', '<Alt><Shift>q']]]></default>
       <summary>Move window left</summary>
       <description>Cycle size focus window to the left</description>
     </key>
 
     <key name="cycle-tiling-right" type="as">
-      <default><![CDATA[['<Alt><Shift>l', '<Alt><Shift>r']]]></default>
+      <default><![CDATA[['<Super>Right', '<Alt><Shift>r']]]></default>
       <summary>Move window right</summary>
       <description>Cycle size focus window to the right</description>
     </key>
 
     <key name="cycle-tiling-maximize" type="as">
-      <default><![CDATA[['<Alt><Shift>j', '<Alt><Shift>w']]]></default>
+      <default><![CDATA[['<Super>Up', '<Alt><Shift>w']]]></default>
       <summary>Maximize window</summary>
       <description>Maximize focused window</description>
     </key>
 
     <key name="cycle-tiling-restore" type="as">
-      <default><![CDATA[['<Alt><Shift>k', '<Alt><Shift>e']]]></default>
+      <default><![CDATA[['<Super>Down', '<Alt><Shift>e']]]></default>
       <summary>Restore initial window size</summary>
       <description>Restore focused window size</description>
     </key>

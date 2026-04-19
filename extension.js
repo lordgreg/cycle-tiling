@@ -4,7 +4,7 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import Shell from "gi://Shell";
 import Meta from "gi://Meta";
 
-const STEPS = [0.25, 0.33, 0.5];
+const STEPS = [0.25, 0.33, 0.5, 0.75, 0.83];
 
 export default class CycleTilingExtension extends Extension {
   constructor(metadata) {
@@ -12,6 +12,7 @@ export default class CycleTilingExtension extends Extension {
 
     this._windowStates = new Map();
     this._bindings = [];
+    this._overriddenBindings = [];
   }
 
   enable() {
@@ -23,6 +24,14 @@ export default class CycleTilingExtension extends Extension {
     this._bind("cycle-tiling-right", () => this._cycle("right"));
     this._bind("cycle-tiling-maximize", () => this._maximize());
     this._bind("cycle-tiling-restore", () => this._restore());
+
+    // override system defaults
+    this._bind_override_system("cycle-tiling-left", () => this._cycle("left"));
+    this._bind_override_system("cycle-tiling-right", () =>
+      this._cycle("right"),
+    );
+    this._bind_override_system("cycle-tiling-maximize", () => this._maximize());
+    this._bind_override_system("cycle-tiling-restore", () => this._restore());
   }
 
   disable() {
@@ -30,8 +39,13 @@ export default class CycleTilingExtension extends Extension {
       console.log(`[Cycle-Tiling] Removing ${name} from stack.`);
       Main.wm.removeKeybinding(name);
     }
+    for (const name of this._overriddenBindings) {
+      console.log(`[Cycle-Tiling] Removing overridden ${name} from stack.`);
+      Meta.keybindings_set_custom_handler(name, null);
+    }
 
     this._bindings = [];
+    this._overriddenBindings = [];
     this._windowStates.clear();
 
     console.log("[Cycle-Tiling] disabled");
@@ -60,6 +74,17 @@ export default class CycleTilingExtension extends Extension {
     this._bindings.push(name);
   }
 
+  _bind_override_system(name, handler) {
+    Meta.keybindings_set_custom_handler(name, () => {
+      try {
+        handler();
+      } catch (e) {
+        console.error(`[Cycle-Tiling] failed override binding ${name}:`, e);
+      }
+    });
+    this._overriddenBindings.push(name);
+  }
+
   // ----------------------------
   // WINDOW LOGIC
   // ----------------------------
@@ -76,10 +101,8 @@ export default class CycleTilingExtension extends Extension {
     }
     console.log(`[Cycle-Tiling] ${direction} called for ${win}.`);
 
-    let state = this._windowStates.get(win) || {
-      direction,
-      step: -1,
-    };
+    // initial state
+    let state = this._initWindowState(win, direction);
 
     if (state.direction !== direction) {
       state.direction = direction;
@@ -100,6 +123,25 @@ export default class CycleTilingExtension extends Extension {
     console.log(`[Cycle-Tiling] ${direction} → ${ratio}`);
   }
 
+  _initWindowState(win, direction) {
+    if (!win) return;
+    if (!direction) direction = "left";
+
+    let state = this._windowStates.get(win);
+
+    if (!state) {
+      state = {
+        direction,
+        step: -1,
+        size: win.get_frame_rect(),
+      };
+
+      this._windowStates.set(win, state);
+    }
+
+    return state;
+  }
+
   _tile(win, direction, ratio) {
     const monitor = win.get_monitor();
     const workspace = global.workspace_manager.get_active_workspace();
@@ -112,7 +154,7 @@ export default class CycleTilingExtension extends Extension {
     const height = workArea.height;
 
     if (direction === "right") {
-      x = workArea.width - width;
+      x = workArea.x + workArea.width - width;
     }
 
     console.log(
@@ -121,12 +163,15 @@ export default class CycleTilingExtension extends Extension {
 
     win.unmaximize();
 
+    win.move_frame(true, x, y);
     win.move_resize_frame(true, x, y, width, height);
   }
 
   _maximize() {
     const win = this._getWindow();
     if (!win) return;
+
+    this._initWindowState(win);
 
     win.maximize();
   }
@@ -135,6 +180,24 @@ export default class CycleTilingExtension extends Extension {
     const win = this._getWindow();
     if (!win) return;
 
-    win.unmaximize();
+    const state = this._windowStates.get(win);
+
+    // no state, do a random size
+    if (!state || !state.size) {
+      const monitor = win.get_monitor();
+      const workspace = global.workspace_manager.get_active_workspace();
+      const workArea = workspace.get_work_area_for_monitor(monitor);
+      const x = Math.floor(workArea.x + workArea.width * 0.15);
+      const y = Math.floor(workArea.y + workArea.height * 0.15);
+      const width = Math.floor(workArea.width * 0.6);
+      const height = Math.floor(workArea.height * 0.6);
+      win.unmaximize();
+      win.move_resize_frame(true, x, y, width, height);
+    } else {
+      const r = state.size;
+      win.unmaximize();
+      win.move_resize_frame(true, r.x, r.y, r.width, r.height);
+      this._windowStates.delete(win);
+    }
   }
 }
