@@ -28,12 +28,10 @@ export default class CycleTilingExtension extends Extension {
     this._bind("cycle-tiling-restore", () => this._restore());
 
     // override system defaults
-    this._bind_override_system("cycle-tiling-left", () => this._cycle("left"));
-    this._bind_override_system("cycle-tiling-right", () =>
-      this._cycle("right"),
-    );
-    this._bind_override_system("cycle-tiling-maximize", () => this._maximize());
-    this._bind_override_system("cycle-tiling-restore", () => this._restore());
+    this._bind_override_system("tiling-left", () => this._cycle("left"));
+    this._bind_override_system("tiling-right", () => this._cycle("right"));
+    this._bind_override_system("maximize", () => this._maximize());
+    this._bind_override_system("unmaximize", () => this._restore());
   }
 
   disable() {
@@ -215,7 +213,7 @@ export default class CycleTilingExtension extends Extension {
       clone = new Clutter.Clone({
         source: actor,
         reactive: false,
-        pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+        pivot_point: new Graphene.Point({ x: 0.5, y: 0.5 }),
       });
       clone.set_position(cloneX, cloneY);
       clone.set_size(cloneW, cloneH);
