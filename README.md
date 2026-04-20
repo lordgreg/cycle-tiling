@@ -1,4 +1,4 @@
-# cycle-tiling Gnome Extension
+# cycle-tiling Gnome Shell Extension
 
 This extension overwrites the default Gnome default Super + Left/Right/Up/Down keybinds so that a user has more size settings to cycle through when using Left/Right. You know Rectangle for Mac? Well, that's basically it, but for Gnome! :)
 

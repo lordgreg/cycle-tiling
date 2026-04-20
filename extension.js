@@ -82,6 +82,8 @@ export default class CycleTilingExtension extends Extension {
         console.error(`[Cycle-Tiling] failed override binding ${name}:`, e);
       }
     });
+
+    console.log(`[Cycle-Tiling] Adding ${name} to overridinen bindings.`);
     this._overriddenBindings.push(name);
   }
 
@@ -173,6 +175,8 @@ export default class CycleTilingExtension extends Extension {
 
     this._initWindowState(win);
 
+    console.log(`[Cycle-Tiling] Maximizing`);
+
     win.maximize();
   }
 
@@ -194,11 +198,15 @@ export default class CycleTilingExtension extends Extension {
 
       win.unmaximize();
       win.move_resize_frame(true, x, y, width, height);
+
+      console.log(`[Cycle-Tiling] Restoring to random size`);
     } else {
       const r = state.size;
       win.unmaximize();
       win.move_resize_frame(true, r.x, r.y, r.width, r.height);
       this._windowStates.delete(win);
+
+      console.log(`[Cycle-Tiling] Restoring to last known size`);
     }
   }
 }
