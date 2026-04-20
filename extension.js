@@ -22,16 +22,18 @@ export default class CycleTilingExtension extends Extension {
 
     console.log("[Cycle-Tiling] enabled");
 
+    // override system defaults BEFORE adding custom keybindings
+    this._bind_override_system("toggle-tiled-left", () => this._cycle("left"));
+    this._bind_override_system("toggle-tiled-right", () =>
+      this._cycle("right"),
+    );
+    this._bind_override_system("maximize", () => this._maximize());
+    this._bind_override_system("unmaximize", () => this._restore());
+
     this._bind("cycle-tiling-left", () => this._cycle("left"));
     this._bind("cycle-tiling-right", () => this._cycle("right"));
     this._bind("cycle-tiling-maximize", () => this._maximize());
     this._bind("cycle-tiling-restore", () => this._restore());
-
-    // override system defaults
-    this._bind_override_system("tiling-left", () => this._cycle("left"));
-    this._bind_override_system("tiling-right", () => this._cycle("right"));
-    this._bind_override_system("maximize", () => this._maximize());
-    this._bind_override_system("unmaximize", () => this._restore());
   }
 
   disable() {
@@ -254,6 +256,7 @@ export default class CycleTilingExtension extends Extension {
   _maximize() {
     const win = this._getWindow();
     if (!win) return;
+    if (win.is_maximized()) return;
 
     this._initWindowState(win);
 
@@ -273,7 +276,7 @@ export default class CycleTilingExtension extends Extension {
       const monitor = win.get_monitor();
       const workspace = global.workspace_manager.get_active_workspace();
       const workArea = workspace.get_work_area_for_monitor(monitor);
-      const width = Math.floor(workArea.width * 0.6);
+      const width = Math.floor(workArea.width * 0.4);
       const height = Math.floor(workArea.height * 0.6);
       const x = Math.floor(workArea.x + (workArea.width - width) / 2);
       const y = Math.floor(workArea.y + (workArea.height - height) / 2);
