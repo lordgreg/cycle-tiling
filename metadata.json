@@ -2,7 +2,7 @@
   "uuid": "cycle-tiling@lordgreg",
   "name": "Cycle Tiling",
   "description": "Rectangle-like cycling window tiling (25% -> 33% -> 50% ...)",
-  "shell-version": ["47", "48", "49", "50"],
+  "shell-version": ["49", "50"],
   "version": 1,
   "settings-schema": "org.gnome.shell.extensions.cycle-tiling",
   "prefs-js": "prefs.js"

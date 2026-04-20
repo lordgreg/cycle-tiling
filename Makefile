@@ -40,3 +40,7 @@ enable:
 disable:
 	@echo "Disabling $(UUID)..."
 	gnome-extensions disable $(UUID)
+
+debug:
+	@echo "Start local gnome environment..."
+	dbus-run-session gnome-shell --devkit --wayland
