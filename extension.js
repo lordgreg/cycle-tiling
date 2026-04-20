@@ -3,6 +3,8 @@ import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import Shell from "gi://Shell";
 import Meta from "gi://Meta";
+import Clutter from "gi://Clutter";
+import Graphene from "gi://Graphene";
 
 const STEPS = [0.25, 0.33, 0.5, 0.75, 0.83];
 
@@ -144,7 +146,7 @@ export default class CycleTilingExtension extends Extension {
     return state;
   }
 
-  _tile(win, direction, ratio) {
+  _tile(win, direction, ratio, animate = true) {
     const monitor = win.get_monitor();
     const workspace = global.workspace_manager.get_active_workspace();
     const workArea = workspace.get_work_area_for_monitor(monitor);
@@ -165,8 +167,90 @@ export default class CycleTilingExtension extends Extension {
 
     win.unmaximize();
 
-    win.move_frame(true, x, y);
-    win.move_resize_frame(true, x, y, width, height);
+    if (animate) {
+      this._animateWindow(win, x, y, width, height);
+    } else {
+      win.move_frame(true, x, y);
+      win.move_resize_frame(true, x, y, width, height);
+    }
+  }
+
+  _animateWindow(win, targetX, targetY, targetWidth, targetHeight) {
+    const actor = win.get_compositor_private();
+    if (!actor) {
+      win.move_frame(true, targetX, targetY);
+      win.move_resize_frame(true, targetX, targetY, targetWidth, targetHeight);
+      return;
+    }
+
+    const oldRect = win.get_frame_rect();
+    const newX = targetX;
+    const newY = targetY;
+    const newW = targetWidth;
+    const newH = targetHeight;
+
+    const dx = Math.abs(oldRect.x - newX);
+    const dy = Math.abs(oldRect.y - newY);
+    const dw = Math.abs(oldRect.width - newW);
+    const dh = Math.abs(oldRect.height - newH);
+
+    if (dx < 2 && dy < 2 && dw < 2 && dh < 2) {
+      win.move_frame(true, newX, newY);
+      win.move_resize_frame(true, newX, newY, newW, newH);
+      return;
+    }
+
+    const xShadow = oldRect.x - actor.get_x();
+    const yShadow = oldRect.y - actor.get_y();
+
+    actor.remove_all_transitions();
+
+    let clone;
+    const cloneX = oldRect.x - xShadow;
+    const cloneY = oldRect.y - yShadow;
+    const cloneW = oldRect.width + 2 * xShadow;
+    const cloneH = oldRect.height + 2 * yShadow;
+
+    try {
+      clone = new Clutter.Clone({
+        source: actor,
+        reactive: false,
+        pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
+      });
+      clone.set_position(cloneX, cloneY);
+      clone.set_size(cloneW, cloneH);
+      global.window_group.add_child(clone);
+    } catch (_e) {
+      win.move_frame(true, newX, newY);
+      win.move_resize_frame(true, newX, newY, newW, newH);
+      return;
+    }
+
+    actor.opacity = 0;
+
+    win.move_frame(true, newX, newY);
+    win.move_resize_frame(true, newX, newY, newW, newH);
+
+    clone.ease({
+      x: newX - xShadow,
+      y: newY - yShadow,
+      width: newW + 2 * xShadow,
+      height: newH + 2 * yShadow,
+      duration: 200,
+      mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+      onStopped: () => {
+        try {
+          actor.opacity = 255;
+          actor.scale_x = 1;
+          actor.scale_y = 1;
+          actor.translation_x = 0;
+          actor.translation_y = 0;
+        } catch (_e) {}
+        try {
+          clone.destroy();
+        } catch (_e) {}
+      },
+    });
   }
 
   _maximize() {
