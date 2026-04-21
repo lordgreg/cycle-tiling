@@ -1,37 +1,48 @@
 # Automatically extract the UUID from metadata.json
 UUID = $(shell grep -Po '(?<="uuid": ")[^"]*' metadata.json)
 NAME = cycle-tiling
-DIST_DIR = dist
 ZIP_NAME = $(DIST_DIR)/$(NAME).shell-extension.zip
-
-FILES = prefs.js extension.js metadata.json
-SCHEMA_DIR = schemas
-COMPILED_SCHEMA = $(SCHEMA_DIR)/gschemas.compiled
+INSTALL_DIR = $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 
 .PHONY: all build install uninstall clean enable disable
 
 all: build
 
-build:
-	@mkdir -p $(DIST_DIR)
+build: clean
+	@mkdir -p dist
 	@echo "Compiling schemas..."
-	glib-compile-schemas $(SCHEMA_DIR)/
+	glib-compile-schemas schemas/
 	@echo "Packing extension into $(ZIP_NAME)..."
-	zip -r $(ZIP_NAME) $(FILES) $(SCHEMA_DIR)
+	zip -r dist/$(UUID).shell-extension.zip metadata.json extension.js prefs.js schemas/*.xml
 
-install: build
-	@echo "Installing $(UUID)..."
-	gnome-extensions install --force $(ZIP_NAME)
+install: schema
+	@mkdir -p $(dir $(INSTALL_DIR))
+	@if [ -L "$(INSTALL_DIR)" ]; then \
+		@echo "Symlink exists, removing."; \
+		rm "$(INSTALL_DIR)"; \
+	elif [ -d "$(INSTALL_DIR)" ]; then \
+		@echo "Extension $(UUID) is already installed. Uninstalling first..."; \
+		$(MAKE) uninstall; \
+	fi
+
+	@echo "Symlinking extension to $(INSTALL_DIR)..."
+	ln -s "$(CURDIR)" "$(INSTALL_DIR)"
+	
 	@echo "Re-logging may be required to see the extension in the list of installed extensions."
+	@echo "Use 'make enable' to enable the extension afterwards."
 
 uninstall:
 	@echo "Uninstalling $(UUID)..."
-	gnome-extensions uninstall $(UUID)
+	rm -rf "$(INSTALL_DIR)"
 
 clean:
 	@echo "Cleaning up..."
-	rm -rf $(DIST_DIR)
-	rm -f $(COMPILED_SCHEMA)
+	rm -rf dist
+	rm -f schemas/gschemas.compiled
+
+schema:
+	@echo "Compiling schemas..."
+	glib-compile-schemas schemas/
 
 enable:
 	@echo "Enabling $(UUID)..."
@@ -44,3 +55,7 @@ disable:
 debug:
 	@echo "Start local gnome environment..."
 	dbus-run-session gnome-shell --devkit --wayland
+
+log:
+	@echo "Showing logs for $(UUID)..."
+	journalctl /usr/bin/gnome-shell -f

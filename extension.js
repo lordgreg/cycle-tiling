@@ -20,8 +20,6 @@ export default class CycleTilingExtension extends Extension {
   enable() {
     this._settings = this.getSettings();
 
-    console.log("[Cycle-Tiling] enabled");
-
     // override system defaults BEFORE adding custom keybindings
     this._bind_override_system("toggle-tiled-left", () => this._cycle("left"));
     this._bind_override_system("toggle-tiled-right", () =>
@@ -37,20 +35,15 @@ export default class CycleTilingExtension extends Extension {
   }
 
   disable() {
-    for (const name of this._bindings) {
-      console.log(`[Cycle-Tiling] Removing ${name} from stack.`);
-      Main.wm.removeKeybinding(name);
-    }
-    for (const name of this._overriddenBindings) {
-      console.log(`[Cycle-Tiling] Removing overridden ${name} from stack.`);
-      Meta.keybindings_set_custom_handler(name, null);
-    }
+    this._bindings.forEach((name) => Main.wm.removeKeybinding(name));
+    this._overriddenBindings.forEach((name) =>
+      Meta.keybindings_set_custom_handler(name, null),
+    );
 
     this._bindings = [];
     this._overriddenBindings = [];
     this._windowStates.clear();
-
-    console.log("[Cycle-Tiling] disabled");
+    this._settings = null;
   }
 
   // ----------------------------
@@ -71,8 +64,6 @@ export default class CycleTilingExtension extends Extension {
         }
       },
     );
-
-    console.log(`[Cycle-Tiling] Adding ${name} to stack.`);
     this._bindings.push(name);
   }
 
@@ -85,7 +76,6 @@ export default class CycleTilingExtension extends Extension {
       }
     });
 
-    console.log(`[Cycle-Tiling] Adding ${name} to overridinen bindings.`);
     this._overriddenBindings.push(name);
   }
 
@@ -99,11 +89,7 @@ export default class CycleTilingExtension extends Extension {
 
   _cycle(direction) {
     const win = this._getWindow();
-    if (!win) {
-      console.log(`[Cycle-Tiling] Cannot get active window.`);
-      return;
-    }
-    console.log(`[Cycle-Tiling] ${direction} called for ${win}.`);
+    if (!win) return;
 
     // initial state
     let state = this._initWindowState(win, direction);
@@ -123,8 +109,6 @@ export default class CycleTilingExtension extends Extension {
     this._tile(win, direction, ratio);
 
     this._windowStates.set(win, state);
-
-    console.log(`[Cycle-Tiling] ${direction} → ${ratio}`);
   }
 
   _initWindowState(win, direction) {
@@ -160,10 +144,6 @@ export default class CycleTilingExtension extends Extension {
     if (direction === "right") {
       x = workArea.x + workArea.width - width;
     }
-
-    console.log(
-      `[Cycle-Tiling] ${direction}: (${workArea.width}x${workArea.height}) ${x} ${y} ${width} ${height}`,
-    );
 
     win.unmaximize();
 
@@ -260,8 +240,6 @@ export default class CycleTilingExtension extends Extension {
 
     this._initWindowState(win);
 
-    console.log(`[Cycle-Tiling] Maximizing`);
-
     win.maximize();
   }
 
@@ -283,15 +261,11 @@ export default class CycleTilingExtension extends Extension {
 
       win.unmaximize();
       win.move_resize_frame(true, x, y, width, height);
-
-      console.log(`[Cycle-Tiling] Restoring to random size`);
     } else {
       const r = state.size;
       win.unmaximize();
       win.move_resize_frame(true, r.x, r.y, r.width, r.height);
       this._windowStates.delete(win);
-
-      console.log(`[Cycle-Tiling] Restoring to last known size`);
     }
   }
 }

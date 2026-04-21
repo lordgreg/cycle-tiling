@@ -49,7 +49,6 @@ export default class CycleTilingPreferences extends ExtensionPreferences {
 
     toggle.connect("notify::active", () => {
       this._settings.set_boolean(key, toggle.active);
-      console.log(`[Cycle-Tiling] updated ${key} with ${toggle.active}`);
     });
 
     row.add_suffix(toggle);
@@ -70,7 +69,6 @@ export default class CycleTilingPreferences extends ExtensionPreferences {
     entry.connect("changed", () => {
       if (!entry.text) return;
       this._settings.set_string(key, entry.text);
-      console.log(`[Cycle-Tiling] updated ${key} with ${entry.text}`);
     });
 
     row.add_suffix(entry);
