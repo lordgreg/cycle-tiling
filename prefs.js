@@ -4,8 +4,6 @@ import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/
 
 export default class CycleTilingPreferences extends ExtensionPreferences {
   fillPreferencesWindow(window) {
-    this._settings = this.getSettings();
-
     const page = new Adw.PreferencesPage();
     window.add(page);
 
@@ -37,43 +35,5 @@ export default class CycleTilingPreferences extends ExtensionPreferences {
     }
 
     page.add(group_keybinds);
-  }
-
-  _createSwitch(title, key) {
-    const row = new Adw.ActionRow({ title });
-
-    const toggle = new Gtk.Switch({
-      active: this._settings.get_boolean(key),
-      valign: Gtk.Align.CENTER,
-    });
-
-    toggle.connect("notify::active", () => {
-      this._settings.set_boolean(key, toggle.active);
-    });
-
-    row.add_suffix(toggle);
-    row.activatable_widget = toggle;
-
-    return row;
-  }
-
-  _createEntry(title, key) {
-    const row = new Adw.ActionRow({ title });
-
-    const entry = new Gtk.Entry({
-      text: this._settings.get_string(key),
-      valign: Gtk.Align.CENTER,
-      width_chars: 4,
-    });
-
-    entry.connect("changed", () => {
-      if (!entry.text) return;
-      this._settings.set_string(key, entry.text);
-    });
-
-    row.add_suffix(entry);
-    row.activatable_widget = entry;
-
-    return row;
   }
 }
