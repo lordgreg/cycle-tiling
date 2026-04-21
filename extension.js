@@ -94,19 +94,18 @@ export default class CycleTilingExtension extends Extension {
     // initial state
     let state = this._initWindowState(win, direction);
 
-    if (state.direction !== direction) {
+    const directionChanged = state.direction !== direction;
+    if (directionChanged) {
+      state.size = win.get_frame_rect();
       state.direction = direction;
-      state.step = -1;
-    }
-
-    if (state.step + 1 >= STEPS.length || state.step < 0) {
+    } else if (state.step + 1 >= STEPS.length || state.step < 0) {
       state.step = 0;
     } else {
       state.step = state.step + 1;
     }
 
     const ratio = STEPS[state.step];
-    this._tile(win, direction, ratio);
+    this._tile(win, direction, ratio, directionChanged);
 
     this._windowStates.set(win, state);
   }
@@ -168,17 +167,6 @@ export default class CycleTilingExtension extends Extension {
     const newY = targetY;
     const newW = targetWidth;
     const newH = targetHeight;
-
-    const dx = Math.abs(oldRect.x - newX);
-    const dy = Math.abs(oldRect.y - newY);
-    const dw = Math.abs(oldRect.width - newW);
-    const dh = Math.abs(oldRect.height - newH);
-
-    if (dx < 2 && dy < 2 && dw < 2 && dh < 2) {
-      win.move_frame(true, newX, newY);
-      win.move_resize_frame(true, newX, newY, newW, newH);
-      return;
-    }
 
     const xShadow = oldRect.x - actor.get_x();
     const yShadow = oldRect.y - actor.get_y();
