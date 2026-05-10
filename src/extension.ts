@@ -14,7 +14,7 @@ import { Direction } from "./models/direction.js";
 // @ts-expect-error types not in exports map
 import type { MetadataJson } from "@girs/gnome-shell/types";
 
-const STEPS = [0.25, 0.33, 0.5, 0.75, 0.83];
+const STEPS = [0.5, 0.75, 0.83, 0.25, 0.17];
 
 export default class CycleTilingExtension extends Extension {
   private settings: Gio.Settings;
