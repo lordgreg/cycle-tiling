@@ -2,7 +2,7 @@ import Adw from "gi://Adw";
 import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 export default class CycleTilingPreferences extends ExtensionPreferences {
-  fillPreferencesWindow(window) {
+  fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
     const page = new Adw.PreferencesPage();
     window.add(page);
 
@@ -34,5 +34,7 @@ export default class CycleTilingPreferences extends ExtensionPreferences {
     }
 
     page.add(group_keybinds);
+
+    return Promise.resolve();
   }
 }
