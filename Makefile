@@ -1,5 +1,6 @@
 NAME=cycle-tiling
 DOMAIN=lordgreg
+ZIP=dist/$(NAME)@$(DOMAIN).zip
 
 .PHONY: all pack install clean
 
@@ -14,15 +15,15 @@ dist/extension.js dist/prefs.js: node_modules/.modules.yaml src/*.ts
 schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xml
 	glib-compile-schemas schemas
 
-$(NAME).zip: dist/extension.js dist/prefs.js schemas/gschemas.compiled
+$(ZIP): dist/extension.js dist/prefs.js schemas/gschemas.compiled
 	@cp -r schemas dist/
 	@cp metadata.json dist/
-	@(cd dist && zip ../$(NAME).zip -9r .)
+	@(cd dist && zip ../$(ZIP) -9r .)
 
-pack: $(NAME).zip
+pack: $(ZIP)
 
-install: $(NAME).zip
-	gnome-extensions install --force $(NAME).zip
+install: $(ZIP)
+	gnome-extensions install --force $(ZIP)
 
 clean:
-	@rm -rf dist node_modules $(NAME).zip
+	@rm -rf dist node_modules

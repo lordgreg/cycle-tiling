@@ -14,19 +14,21 @@ Any good suggestions can be added to the issues, I will try to get to those as s
 
 I tried to understand how to develop an extension reading through [GNOME Extension Development](https://gjs.guide/extensions/development/creating.html). It explains the basics and how to get starting. Everyhing else is just javascript :)
 
-## Testing locally
+## Build & Install
 
 ```bash
-# Install extension (creates symlink and compiles schema)
+# Install dependencies
+pnpm install
+
+# Build TypeScript sources
+make
+
+# Create extension zip
+make pack
+
+# Install extension from zip
 make install
 
-# Compile schema only
-make schema
-
-# Start local gnome environment
-make debug
-# within, enable extension
-make enable
+# Clean build artifacts
+make clean
 ```
-
-Other make tasks are available and are self-explanatory :)
