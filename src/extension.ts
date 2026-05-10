@@ -178,7 +178,7 @@ export default class CycleTilingExtension extends Extension {
     targetWidth: number,
     targetHeight: number,
   ) {
-    const actor = win.get_compositor_private();
+    const actor = win.get_compositor_private() as Clutter.Actor;
     if (!actor) {
       win.move_frame(true, targetX, targetY);
       win.move_resize_frame(true, targetX, targetY, targetWidth, targetHeight);
