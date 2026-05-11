@@ -18,12 +18,15 @@ schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xm
 $(ZIP): dist/extension.js dist/prefs.js schemas/gschemas.compiled
 	@cp -r schemas dist/
 	@cp metadata.json dist/
-	@(cd dist && zip ../$(ZIP) -9 extension.js prefs.js metadata.json schemas)
+	@(cd dist && zip ../$(ZIP) -9 extension.js prefs.js metadata.json schemas/*)
 
 pack: $(ZIP)
 
 install: $(ZIP)
 	gnome-extensions install --force $(ZIP)
+
+uninstall:
+	gnome-extensions uninstall $(DOMAIN)@$(NAME)
 
 clean:
 	@rm -rf dist node_modules
